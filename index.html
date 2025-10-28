@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>별똥별 잡기 게임 ✨</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #000011, #000022);
+    font-family: "Press Start 2P", cursive;
+    color: #fff;
+    text-align: center;
+  }
+
+  h1 {
+    margin-top: 20px;
+    font-size: 20px;
+    color: #ffd700;
+    text-shadow: 0 0 5px #fff;
+  }
+
+  #gameArea {
+    position: relative;
+    width: 100vw;
+    height: 80vh;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 4px #fff, 0 0 8px #fffa;
+    cursor: pointer;
+    image-rendering: pixelated;
+  }
+
+  #score, #timer {
+    font-size: 16px;
+    margin: 10px;
+  }
+
+  #wish {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: #ffb6c1;
+    text-shadow: 0 0 8px #fff;
+    display: none;
+    animation: fade 1s ease-out;
+  }
+
+  @keyframes fade {
+    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -60%) scale(1.2); }
+  }
+
+  #gameOver {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #fff;
+    display: none;
+    text-shadow: 0 0 6px #fffa;
+  }
+
+  button {
+    background: #ffb6c1;
+    border: none;
+    padding: 8px 16px;
+    margin-top: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  button:hover {
+    background: #ffc7d4;
+  }
+</style>
+</head>
+<body>
+  <h1>🌟 별똥별 잡기 게임 🌟</h1>
+  <div id="score">점수: 0</div>
+  <div id="timer">남은 시간: 20초</div>
+  <div id="gameArea"></div>
+  <div id="wish">Make a wish!</div>
+  <div id="gameOver">
+    <div>게임 종료!</div>
+    <div id="finalScore"></div>
+    <button onclick="startGame()">다시 시작</button>
+  </div>
+
+<script>
+  const gameArea = document.getElementById("gameArea");
+  const scoreEl = document.getElementById("score");
+  const timerEl = document.getElementById("timer");
+  const wishEl = document.getElementById("wish");
+  const gameOverEl = document.getElementById("gameOver");
+  const finalScoreEl = document.getElementById("finalScore");
+
+  let score = 0;
+  let timeLeft = 20;
+  let gameInterval;
+  let starInterval;
+  let running = false;
+
+  function createStar() {
+    const star = document.createElement("div");
+    star.classList.add("star");
+    const size = Math.random() * 6 + 8;
+    star.style.width = size + "px";
+    star.style.height = size + "px";
+    star.style.left = Math.random() * (window.innerWidth - size) + "px";
+    star.style.top = "-20px";
+
+    gameArea.appendChild(star);
+
+    const fallDuration = Math.random() * 2 + 2; // 2~4초
+    const startTime = Date.now();
+
+    function fall() {
+      const elapsed = (Date.now() - startTime) / 1000;
+      const progress = elapsed / fallDuration;
+      if (progress < 1 && running) {
+        star.style.top = (progress * window.innerHeight) + "px";
+        requestAnimationFrame(fall);
+      } else {
+        star.remove();
+      }
+    }
+    requestAnimationFrame(fall);
+
+    star.addEventListener("click", () => {
+      score++;
+      scoreEl.textContent = "점수: " + score;
+      star.remove();
+      showWish();
+    });
+  }
+
+  function showWish() {
+    wishEl.style.display = "block";
+    wishEl.style.animation = "none";
+    void wishEl.offsetWidth; // reflow
+    wishEl.style.animation = "fade 1s ease-out";
+    setTimeout(() => { wishEl.style.display = "none"; }, 1000);
+  }
+
+  function startGame() {
+    score = 0;
+    timeLeft = 20;
+    running = true;
+    scoreEl.textContent = "점수: " + score;
+    timerEl.textContent = "남은 시간: " + timeLeft + "초";
+    gameOverEl.style.display = "none";
+    gameArea.innerHTML = "";
+
+    starInterval = setInterval(createStar, 500);
+    gameInterval = setInterval(() => {
+      timeLeft--;
+      timerEl.textContent = "남은 시간: " + timeLeft + "초";
+      if (timeLeft <= 0) endGame();
+    }, 1000);
+  }
+
+  function endGame() {
+    running = false;
+    clearInterval(starInterval);
+    clearInterval(gameInterval);
+    const stars = document.querySelectorAll(".star");
+    stars.forEach(s => s.remove());
+    finalScoreEl.textContent = "최종 점수: " + score;
+    gameOverEl.style.display = "block";
+  }
+
+  // 자동 시작
+  startGame();
+</script>
+</body>
+</html>
